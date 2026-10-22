@@ -413,6 +413,16 @@ register_readonly(
     guild_id=GUILD_ID,
 )
 
+# Private writable FPS team chats, scoped by the assigned team role.
+from fps_team_chats import register_team_chats
+
+register_team_chats(
+    bot=bot,
+    is_admin=is_admin,
+    reply=answer,
+    guild_id=GUILD_ID,
+)
+
 if __name__ == "__main__":
     if not TOKEN or TOKEN == "SET_PRIVATELY_IN_HOST":
         raise SystemExit("Set DISCORD_TOKEN as a private hosting environment variable first.")
