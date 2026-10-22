@@ -2,6 +2,17 @@
 
 **Status:** LIVE on Northflank (according to the successful Discord tests). The bot reads its data from the FPS Google Sheet and does not write to it. Currently deployed commands: `/setup_fps`, `/roster`, `/treasury`, `/shop`, `/reputation`, `/contracts`, and **`/publish_equipment`**. The current integration uses manual publication, not automatic background updates.
 
+## Assigning existing Discord roles
+
+**Role commands (no creation of new roles):**
+
+- `/assign_role member:@Person role:@FPS Anvil` — give that member an existing FPS Discord role.
+- `/remove_role member:@Person role:@FPS Hammer` — remove an existing FPS Discord role.
+
+Both commands are restricted to **FPS Command** or Discord server administrators. They accept only roles from the bot's existing FPS role allowlist: FPS Command, FPS Team Leader, FPS Member, FPS Anvil, FPS Hammer, FPS Raven, FPS Titan, FPS Aviation, and FPS Command Support. **Only a Discord administrator can grant or remove FPS Command itself**, and granting roles with sensitive Discord administrative permissions also requires an administrator. Normal member and section roles can be delegated by FPS Command staff.
+
+The bot needs **Manage Roles** permission and its highest role must be **above the FPS roles** it manages in Server Settings → Roles. Discord role assignments do **not** edit the Google Sheets roster and do **not** automatically remove other team roles. When transferring a member from Anvil to Hammer, assign Hammer and then remove Anvil; separately update the Google Sheets roster to keep published member records in sync. These actions return a private confirmation and keep audit reasons on the Discord role change.
+
 ## Public treasury balance for all FPS members
 
 **`/balance`** can be used by **any member of the FPS Discord server**, in any channel where they can use application commands. It posts a normal **public** Discord reply (not an ephemeral one) showing only the live **FPS Treasury!C11** company balance in fictional CR. No Google Sheets edits, individual transactions, purchases, or other private records are disclosed.
