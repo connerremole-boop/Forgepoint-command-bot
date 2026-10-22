@@ -187,6 +187,42 @@ async def treasury(interaction: discord.Interaction):
         await answer(interaction, "Google Sheets is not configured or temporarily unavailable.")
 
 
+@bot.tree.command(name="balance", description="Show the current FPS company credit balance to everyone in this server")
+async def balance(interaction: discord.Interaction):
+    """Public, read-only treasury balance. Does not expose the finance ledger."""
+    if interaction.guild is None or (GUILD_ID and interaction.guild.id != GUILD_ID):
+        return await answer(interaction, "This command is available only in the FPS Discord server.")
+
+    # Unlike /treasury, this is available to every server member and is NOT ephemeral.
+    # Fetch only the shareable C11 summary, not individual purchase or adjustment rows.
+    await interaction.response.defer(thinking=True, ephemeral=False)
+    try:
+        balance_value = await asyncio.to_thread(
+            lambda: sheet().worksheet("FPS Treasury").acell("C11").value
+        )
+        if not balance_value:
+            raise ValueError("The treasury balance cell C11 is empty.")
+        embed = discord.Embed(
+            title="🏦 FORGEPOINT SECURITY | COMPANY BALANCE",
+            description=f"**Current funds:** {balance_value}\n"
+                        "Shared FPS campaign treasury • CR is fictional game currency.",
+            color=0x137D73,
+            timestamp=discord.utils.utcnow(),
+        )
+        embed.set_footer(text="Live from FPS Master Sheet • run /balance to refresh")
+        await interaction.followup.send(
+            embed=embed,
+            ephemeral=False,
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+    except Exception:
+        log.exception("Public treasury balance lookup failed")
+        await interaction.followup.send(
+            "I couldn't read the FPS treasury balance. No spreadsheet information was changed.",
+            ephemeral=False,
+        )
+
+
 @bot.tree.command(name="shop", description="Browse FPS equipment prices")
 @app_commands.describe(section="Optional partial section name")
 async def shop(interaction: discord.Interaction, section: str = ""):
