@@ -24,7 +24,7 @@ TEAM_CHANNEL_ROLES = {
     "hammer-team": ("FPS Hammer",),
     "raven-sta": ("FPS Raven",),
     "titan-heavy": ("FPS Titan",),
-    "aviation": ("FPS Aviation", "FPS Command Support"),
+    "aviation": ("FPS Aviation",),
 }
 SPECIAL_CHANNEL_ROLES = {
     "company-treasury": ("FPS Command",),
@@ -66,9 +66,9 @@ def proper_writers(channel):
     if channel.name in SPECIAL_CHANNEL_ROLES:
         return SPECIAL_CHANNEL_ROLES[channel.name]
     if channel.name in TEAM_CHANNEL_ROLES:
-        return tuple(dict.fromkeys(
-            GENERAL_WRITERS + TEAM_CHANNEL_ROLES[channel.name]
-        ))
+        # Each private team chat belongs only to its assigned section
+        # plus Forge Command; generic Team Leaders get no cross-team access.
+        return ("FPS Command",) + TEAM_CHANNEL_ROLES[channel.name]
     if channel.category and normalized(channel.category.name) == "fpscommand":
         return ("FPS Command",)
     return GENERAL_WRITERS
@@ -187,7 +187,8 @@ def register_readonly(bot, is_admin, reply, guild_id=0):
             "only write permissions are changed. Existing member-specific "
             "message allowances are removed so the proper roles control posting.\n"
             "Allowed writers: Command and Team Leaders generally; "
-            "assigned team roles in their own channels; Command only in leadership/treasury.\n"
+            "only the section role + Command in each team chat; Command only in leadership/treasury.\n"
+            "Team-chat visibility is set separately by /setup_team_chats.\n"
             "**Important:** Discord Administrators still bypass normal channel restrictions.\n\n"
         ).format(len(targets), len(skipped))
         details = "\n".join(preview_lines)
