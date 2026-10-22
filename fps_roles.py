@@ -62,13 +62,9 @@ def register_roles(bot, is_command, is_admin, reply, permitted_roles, guild_id=0
             return ("Move the Forgepoint Command bot's role ABOVE the FPS role "
                     "you want it to manage in Discord Server Settings → Roles.")
 
-        # Discord role hierarchy also limits who can assign high roles.
-        actor = interaction.user
-        if guild.owner_id != actor.id:
-            if role >= actor.top_role:
-                return "Your own Discord role must be above the role you want to manage."
-            if member.id != actor.id and member.top_role >= actor.top_role:
-                return "You cannot manage the roles of a member at or above your role."
+        # Command staff may delegate normal FPS role assignments via the bot
+        # even without personally holding Discord's Manage Roles permission.
+        # Bot hierarchy plus the strict FPS allowlist are the boundaries.
 
         return None
 
