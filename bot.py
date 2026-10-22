@@ -229,6 +229,105 @@ async def contracts(interaction: discord.Interaction):
         await answer(interaction, "Google Sheets isn't available yet.")
 
 
+# Manually sync the free Base Equipment tab to a single reusable channel post.
+# This does not write to the spreadsheet or run background polling.
+EQUIPMENT_POST_MARKER = "FPS_BASE_EQUIPMENT_V1 • /publish_equipment"
+equipment_publish_lock = __import__("asyncio").Lock()
+
+
+def load_base_equipment():
+    """Read only the authoritative, bounded Base Equipment ranges."""
+    worksheet = sheet().worksheet("Base Equipment")
+    starter = worksheet.get("A6:E13")
+    titan_rows = worksheet.get("A18:E18")
+    policy_rows = worksheet.get("A22:A24")
+    if len(starter) != 8 or any(len(item) < 5 for item in starter):
+        raise ValueError("Standard loadout is incomplete; publication cancelled.")
+    if not titan_rows or len(titan_rows[0]) < 5:
+        raise ValueError("Titan first-issue equipment is missing; publication cancelled.")
+    return starter, titan_rows[0], policy_rows
+
+
+@bot.tree.command(name="publish_equipment", description="Post or refresh the free starter kit in #standard-equipment")
+async def publish_equipment(interaction: discord.Interaction):
+    """Command-only; update one bot-authored post instead of spamming duplicates."""
+    if interaction.guild is None:
+        return await answer(interaction, "Use this in your FPS Discord server.")
+    if not is_command(interaction):
+        return await answer(interaction, "Only FPS Command or server administrators can publish equipment.")
+    channel = discord.utils.get(interaction.guild.text_channels, name="standard-equipment")
+    if channel is None:
+        return await answer(interaction, "I couldn't find #standard-equipment. Check the channel name or run server setup.")
+    member = interaction.guild.me
+    if member is None:
+        return await answer(interaction, "Unable to verify my server permissions. Check the bot's server role.")
+    permissions = channel.permissions_for(member)
+    if not all((permissions.view_channel, permissions.send_messages,
+                permissions.embed_links, permissions.read_message_history)):
+        return await answer(interaction, "I need View Channel, Send Messages, Embed Links, and Read Message History in #standard-equipment.")
+
+    await interaction.response.defer(ephemeral=True, thinking=True)
+    try:
+        # gspread is synchronous: keep the Discord event loop responsive.
+        starter, titan, policy_rows = await __import__("asyncio").to_thread(load_base_equipment)
+    except Exception:
+        log.exception("Unable to read the Base Equipment tab")
+        return await answer(interaction, "Couldn't read the Base Equipment tab. No Discord post was changed.")
+
+    embed = discord.Embed(
+        title="⚒️ FORGEPOINT SECURITY | STANDARD EQUIPMENT",
+        description="**Free starting equipment for every FPS operator.**\n"
+                    "Pulled from the **Base Equipment** tab; run `/publish_equipment` again whenever that tab changes.",
+        color=0x137D73,
+        timestamp=discord.utils.utcnow(),
+    )
+    starter_lines = [f"• **{item[1]}** — {item[3]} CR  _( {item[0]} )_" for item in starter]
+    embed.add_field(name="STANDARD OPERATOR LOADOUT", value="\n".join(starter_lines), inline=False)
+    embed.add_field(
+        name="TITAN HEAVY — FIRST SECTION WEAPON",
+        value=f"**{titan[1]}** — {titan[3]} CR\n{titan[2]}\n{titan[4]}",
+        inline=False,
+    )
+    policies = [row[0] for row in policy_rows if row and row[0].strip()]
+    if policies:
+        embed.add_field(name="EQUIPMENT POLICY", value="\n".join(f"• {x}" for x in policies)[:1024], inline=False)
+    embed.add_field(
+        name="SOURCE OF TRUTH",
+        value=f"[FPS Master Sheet — Base Equipment](https://docs.google.com/spreadsheets/d/{SHEET_ID}/edit#gid=1604903172)",
+        inline=False,
+    )
+    embed.set_footer(text=EQUIPMENT_POST_MARKER)
+
+    try:
+        async with equipment_publish_lock:
+            previous = None
+            async for message in channel.history(limit=250):
+                if message.author.id == bot.user.id and any(
+                    old.footer.text == EQUIPMENT_POST_MARKER for old in message.embeds
+                ):
+                    previous = message
+                    break
+
+            if previous:
+                posted = await previous.edit(embed=embed, allowed_mentions=discord.AllowedMentions.none())
+                result = "Updated the existing equipment post"
+            else:
+                posted = await channel.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())
+                result = "Published the standard equipment post"
+
+            if not posted.pinned and permissions.manage_messages:
+                try:
+                    await posted.pin(reason="FPS standard-equipment reference")
+                except discord.HTTPException:
+                    log.warning("Published equipment but could not pin the message")
+            if not posted.pinned and not permissions.manage_messages:
+                result += " (pin it manually if you want it pinned)"
+        await answer(interaction, f"✅ {result} in {channel.mention}. No Google Sheets data was modified.")
+    except discord.HTTPException:
+        log.exception("Failed to publish FPS equipment")
+        await answer(interaction, "Discord couldn't publish the equipment post. Check my channel permissions and try again.")
+
+
 if __name__ == "__main__":
     if not TOKEN or TOKEN == "SET_PRIVATELY_IN_HOST":
         raise SystemExit("Set DISCORD_TOKEN as a private hosting environment variable first.")
