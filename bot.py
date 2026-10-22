@@ -329,6 +329,19 @@ async def publish_equipment(interaction: discord.Interaction):
         await answer(interaction, "Discord couldn't publish the equipment post. Check my channel permissions and try again.")
 
 
+
+# Manual publications for essential FPS channels. Registration happens before sync.
+from fps_publish import register_publishing
+
+register_publishing(
+    bot=bot,
+    get_sheet=sheet,
+    is_command=is_command,
+    reply=answer,
+    rules=RULES,
+    sheet_id=SHEET_ID,
+)
+
 if __name__ == "__main__":
     if not TOKEN or TOKEN == "SET_PRIVATELY_IN_HOST":
         raise SystemExit("Set DISCORD_TOKEN as a private hosting environment variable first.")
