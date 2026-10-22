@@ -43,6 +43,7 @@ WRITE_FLAGS = (
     "send_voice_messages",
     "send_polls",
     "add_reactions",
+    "use_application_commands",
 )
 
 
