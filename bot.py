@@ -378,6 +378,19 @@ register_publishing(
     sheet_id=SHEET_ID,
 )
 
+# FPS command staff can assign or remove EXISTING Discord roles.
+# No role creation, no Sheets writes, and restricted to the FPS role allowlist.
+from fps_roles import register_roles
+
+register_roles(
+    bot=bot,
+    is_command=is_command,
+    is_admin=is_admin,
+    reply=answer,
+    permitted_roles=ROLES,
+    guild_id=GUILD_ID,
+)
+
 if __name__ == "__main__":
     if not TOKEN or TOKEN == "SET_PRIVATELY_IN_HOST":
         raise SystemExit("Set DISCORD_TOKEN as a private hosting environment variable first.")
