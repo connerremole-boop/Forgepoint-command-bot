@@ -1,3 +1,23 @@
+# Forgepoint Command Bot — Starter Deployment
+
+**Status:** Source uploaded to your private GitHub repository. **Not yet hosted or online.** This is the **safe read-only starter**, not yet the full V1 feature set from the downloadable ZIP. Current features in `bot.py`: `/setup_fps` (preview/create), `/roster`, `/treasury`, `/shop`, `/reputation`, `/contracts`.
+
+## Deploy on Railway (phone-friendly)
+1. Connect this private GitHub repository in Railway → New Project → Deploy from GitHub.
+2. Use the included `Dockerfile`; Railway will run `python bot.py`.
+3. Add private Railway **Variables**:
+   - `DISCORD_TOKEN`: copy the token yourself from Discord Developer Portal → Bot. **Never commit/share the token.**
+   - `DISCORD_GUILD_ID`: your Discord FPS server ID (Discord Developer Mode → Copy Server ID).
+   - `GOOGLE_SHEET_ID`: `1ZH5-ComS-Dv21bRGgM7GZ9SfS1bRcE6QfOXjTqshE6Y` (already has this default).
+   - `GOOGLE_SERVICE_ACCOUNT_B64`: optional until setting up live Google Sheets; this is the Base64 of a dedicated Google service account JSON key, kept secret in Railway, and the service account must have Viewer access to the Master Sheet.
+4. Deploy and confirm Railway logs show `Logged in as Forgepoint Command`.
+5. In Discord, use `/setup_fps confirm:false` before approving `confirm:true`. Only admins can run it. It creates missing channels/roles and never deletes existing ones.
+6. The bot role needs **Manage Channels**, **Manage Roles**, **View Channels**, **Send Messages**, **Read Message History**, **Embed Links**; move bot role above FPS roles if role management fails.
+
+**Caution:** Google Sheet write commands, automatic announcements, and recurring synchronization from the original V1 prototype are **not yet deployed in this starter**. Sheet-linked read commands require a Google service account configured in Railway. Reputation remains **DRAFT**. No real-money exchange value is assigned to CR.
+
+---
+## Original V1 design notes (planned / bundled separately)
 # Forgepoint Security — Command & Management Discord Bot
 
 **FPS Command Bot** is a Python 3.11+ Discord bot for **Forgepoint Security**, the modern PMC unit in the BMG/Arma Reforger campaign. It can scaffold your existing Discord server, publish your unit rules, and use your **existing** Google Sheets workbook as its live source of truth.
