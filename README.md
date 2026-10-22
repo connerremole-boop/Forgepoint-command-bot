@@ -2,6 +2,31 @@
 
 **Status:** LIVE on Northflank (according to the successful Discord tests). The bot reads its data from the FPS Google Sheet and does not write to it. Currently deployed commands: `/setup_fps`, `/roster`, `/treasury`, `/shop`, `/reputation`, `/contracts`, and **`/publish_equipment`**. The current integration uses manual publication, not automatic background updates.
 
+## Finish the FPS Discord appearance and public treasury
+
+The bot has two new slash commands (requires the new version to deploy from GitHub to Northflank):
+
+1. `/setup_appearance confirm:false` — admin-only preview. Lists all colors, planned channel permission change, and a privacy warning. **No changes.**
+2. `/setup_appearance confirm:true` — admin-only apply. Colors existing team roles, makes **only** `#company-treasury` visible and read-only to `@everyone`, then publishes a pinned company-balance snapshot if the bot has Manage Messages. **It does not make other command channels public or alter Google Sheets.**
+3. `/publish_treasury` — FPS Command or server admins can rerun it whenever contract income/purchases change. It reads only `FPS Treasury!C11`, updating its existing managed balance post rather than spamming another. Everyone can still use `/balance` in an accessible text channel to get the current live amount.
+
+**Unique team colors (only these six section roles are recolored):**
+
+| Team role | Distinctive chat color |
+|---|---|
+| FPS Anvil | Blue `#3B82F6` |
+| FPS Hammer | Orange `#F97316` |
+| FPS Raven | Purple `#A855F7` |
+| FPS Titan | Red `#EF4444` |
+| FPS Aviation | Cyan `#06B6D4` |
+| FPS Command Support | Green `#22C55E` |
+
+Generic `FPS Member` and `FPS Team Leader` roles are intentionally unchanged to avoid overriding individual section colors. Discord displays the color of each member's **highest-positioned colored role**; if an unrelated or higher role also has a color, the relevant section role may need to be positioned higher by a server administrator.
+
+**Treasury permission and placement:** The existing `#company-treasury` stays **within its current FPS COMMAND category**, with a channel-specific override giving `@everyone` **View Channel + Read Message History**, but **not Send Messages**. `#leadership` and the rest of the private command area are not changed. The treasury becomes an **unsynced channel** so its public override will not change the category or sister channels.
+
+**IMPORTANT:** After applying, previous messages in `#company-treasury` will also be visible to all server members. Review its history before using `confirm:true`. The bot needs **Manage Roles** and its highest role above each team role, **Manage Channels** for the treasury, plus **Send Messages** and **Embed Links**; `Manage Messages` is optional for automatic pinning. These commands never create roles or automatically synchronize the Sheets roster.
+
 ## Assigning existing Discord roles
 
 **Role commands (no creation of new roles):**
@@ -17,7 +42,7 @@ The bot needs **Manage Roles** permission and its highest role must be **above t
 
 **`/balance`** can be used by **any member of the FPS Discord server**, in any channel where they can use application commands. It posts a normal **public** Discord reply (not an ephemeral one) showing only the live **FPS Treasury!C11** company balance in fictional CR. No Google Sheets edits, individual transactions, purchases, or other private records are disclosed.
 
-The older **`/treasury`** command remains **FPS Command-only** and responds privately. The **`#company-treasury`** channel also remains command-only; this update does not change any channel permissions. If everyone needs to see the balance, run `/balance` in a channel that everyone can already view.
+The older **`/treasury`** command remains **FPS Command-only** and responds privately. Until `/setup_appearance confirm:true` is run, **`#company-treasury`** keeps its original private permissions. After setup, it becomes publicly readable (but remains read-only for regular members). Regardless, any server member can use `/balance` in a channel they can access.
 
 This update is committed to the GitHub main branch; the connected Northflank service must deploy the latest commit before the slash command appears. If it does not, inspect the Northflank deployment status and logs.
 
