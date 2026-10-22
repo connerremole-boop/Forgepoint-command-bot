@@ -2,6 +2,26 @@
 
 **Status:** LIVE on Northflank (according to the successful Discord tests). The bot reads its data from the FPS Google Sheet and does not write to it. Currently deployed commands: `/setup_fps`, `/roster`, `/treasury`, `/shop`, `/reputation`, `/contracts`, and **`/publish_equipment`**. The current integration uses manual publication, not automatic background updates.
 
+## Essential channel publisher commands
+
+These commands are **manual** (no background monitoring). They pull fresh data from the already-connected Master Sheet each time, then publish **one bot-authored reference post per channel**. Re-running a command edits its previous managed message, within the most recent 250 channel messages, rather than posting duplicates. Commands are restricted to FPS Command or Discord server Administrators and are **read-only** toward Google Sheets.
+
+| Slash command | Destination channel | Data source / action |
+|---|---|---|
+| `/publish_equipment` | `#standard-equipment` | Free base loadout + Titan starting M249 |
+| `/publish_roster` | `#company-roster` | Personnel Dashboard + Master Roster |
+| `/publish_chain` | `#chain-of-command` | Live leadership from Chain of Command |
+| `/publish_shop` | `#equipment-shop` | All upgrade prices from Catalog |
+| `/publish_contracts` | `#contracts` | Most recent 8 contracts and payouts |
+| `/publish_reputation` | `#reputation` | 0–100 reputation + clearly marked **DRAFT** |
+| `/publish_boc` | `#recruitment` | Five-block, 30-minute Basic Operator Course |
+| `/publish_rules` | `#rules` | Summary of the existing static company rules |
+| `/post_notice channel:<announcements or operations> text:<your text> confirm:<false/true>` | `#announcements` or `#operations` | Creates a **new** notice only when `confirm:true`; otherwise shows a private preview |
+
+**Important:** The original setup's first chain-of-command and rules posts are separate from the new managed summaries. The first `/publish_chain` or `/publish_rules` may add one new post. Review the new post and optionally remove the old one manually if redundant. Nothing here deletes channels, roles, human posts, or spreadsheet records.
+
+**Privacy:** The treasury and command leadership channels are not public publisher targets. Use the existing private `/treasury` slash command for financial balances. The bot only pins updates if it has `Manage Messages` in the target channel; granting Administrator permission is unnecessary.
+
 ## Publishing standard equipment in Discord
 
 **What it does:** `/publish_equipment` reads **Base Equipment!A6:E13, A18:E18, and A22:A24** from the live FPS Master Sheet, then creates or updates one bot-authored embed in **#standard-equipment**. It includes the free starter loadout, the *one initial M249 for Titan Heavy* rule, shop-policy notes, and a source link. It does **not** spend credits or modify Google Sheets.
