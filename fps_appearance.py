@@ -1,7 +1,8 @@
 """FPS visual setup: color existing team roles and make only the treasury public.
 
-Admins explicitly preview then confirm the permissions change. The treasury
-is moved into FPS INFORMATION to preserve the privacy of FPS COMMAND.
+Admins explicitly preview then confirm. The treasury stays in its current
+category while its individual channel overrides grant everyone read access.
+Other FPS COMMAND channels remain private.
 """
 import asyncio
 import logging
@@ -22,7 +23,6 @@ TEAM_COLORS = {
 }
 TREASURY_MARKER = "FPS_PUBLIC_TREASURY_REFERENCE_V1"
 TREASURY_NAME = "company-treasury"
-PUBLIC_CATEGORY = "FPS INFORMATION"
 
 
 def register_appearance(bot, get_sheet, is_command, is_admin, reply, guild_id=0):
@@ -118,15 +118,12 @@ def register_appearance(bot, get_sheet, is_command, is_admin, reply, guild_id=0)
         missing = [name for name in TEAM_COLORS
                    if discord.utils.get(guild.roles, name=name) is None]
         channel = treasury_channel(guild)
-        public_category = discord.utils.get(guild.categories, name=PUBLIC_CATEGORY)
-        if missing or not channel or not public_category:
+        if missing or not channel:
             parts = []
             if missing:
                 parts.append("Missing roles: " + ", ".join(missing))
             if not channel:
                 parts.append("Missing #company-treasury")
-            if not public_category:
-                parts.append("Missing category FPS INFORMATION")
             return await reply(interaction, "\n".join(parts) + "\nRun /setup_fps first if the missing roles/channels need creation.")
 
         legend = "\n".join("• **{}** — `#{:06X}`".format(name, color)
@@ -134,13 +131,13 @@ def register_appearance(bot, get_sheet, is_command, is_admin, reply, guild_id=0)
         location = channel.category.name if channel.category else "(none)"
         preview = (
             "**FPS APPEARANCE PREVIEW**\n" + legend +
-            "\n\n**Treasury:** Move #company-treasury from **{}** into **{}** and "
-            "make it visible to @everyone (read-only for members).\n"
-            "The existing FPS COMMAND category and leadership channels stay private.\n"
+            "\n\n**Treasury:** Keep #company-treasury inside **{}**, but "
+            "grant @everyone visibility (read-only for members).\n"
+            "All other FPS COMMAND channels remain private.\n"
             "**Privacy notice:** Opening the existing treasury channel also makes "
             "its previously posted message history visible to members with access.\n"
             "The bot will post the current balance from FPS Treasury!C11.\n"
-            "Run `/setup_appearance confirm:true` to apply.".format(location, PUBLIC_CATEGORY)
+            "Run `/setup_appearance confirm:true` to apply.".format(location)
         )
         if not confirm:
             return await reply(interaction, preview)
@@ -176,8 +173,8 @@ def register_appearance(bot, get_sheet, is_command, is_admin, reply, guild_id=0)
             return await reply(interaction, "Some team colors were updated, but Discord rejected another. "
                                "Check my Manage Roles permission and role hierarchy; re-run to finish.")
 
-        # One atomic channel edit: preserve every other existing overwrite;
-        # move only the treasury into the public informational category.
+        # One atomic channel edit: preserve all other overwrites and its category;
+        # only grant @everyone read-only access to the treasury itself.
         overwrites = dict(channel.overwrites)
         default = channel.overwrites_for(guild.default_role)
         default.view_channel = True
@@ -187,10 +184,9 @@ def register_appearance(bot, get_sheet, is_command, is_admin, reply, guild_id=0)
         overwrites[guild.default_role] = default
         try:
             channel = await channel.edit(
-                category=public_category,
                 overwrites=overwrites,
                 sync_permissions=False,
-                reason="FPS public, read-only treasury; command channels remain private",
+                reason="FPS treasury public read-only; preserve its category and private command channels",
             )
         except discord.HTTPException:
             log.exception("Could not make FPS treasury public")
