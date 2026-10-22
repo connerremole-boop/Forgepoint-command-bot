@@ -2,6 +2,28 @@
 
 **Status:** LIVE on Northflank (according to the successful Discord tests). The bot reads its data from the FPS Google Sheet and does not write to it. Currently deployed commands: `/setup_fps`, `/roster`, `/treasury`, `/shop`, `/reputation`, `/contracts`, and **`/publish_equipment`**. The current integration uses manual publication, not automatic background updates.
 
+## Private and writable FPS team chats
+
+New admin-only command: `/setup_team_chats`.
+
+- **Preview:** `/setup_team_chats confirm:false` — shows all five channels, their assigned role, and the FPS Command oversight exception. Makes no changes.
+- **Apply:** `/setup_team_chats confirm:true` — restricts each team chat's **View Channel**, **Read Message History**, message sending, reactions and thread/chat permissions to the **assigned team role + FPS Command**. The bot retains access to its own server channels. Discord server Administrators can always bypass channel restrictions.
+- **Unchanged:** General FPS information, treasury, leadership, Text Channels, Adults Only, all voice channels, and the channels' category placement. No changes to Google Sheets, member role assignments, or previous messages.
+
+| Chat | Members who can see and message |
+|---|---|
+| `#anvil-team` | FPS Anvil + FPS Command |
+| `#hammer-team` | FPS Hammer + FPS Command |
+| `#raven-sta` | FPS Raven + FPS Command |
+| `#titan-heavy` | FPS Titan + FPS Command |
+| `#aviation` | FPS Aviation + FPS Command |
+
+**Important:** Give every team leader their corresponding **team role** (Anvil, Hammer, etc.). Having `FPS Team Leader` **alone** no longer grants access to every section chat. Command members retain an oversight exception. Ordinary Discord admins and the server owner also retain Discord's built-in access. Prior team messages become hidden from people who lose permission, but are not deleted.
+
+Existing member/role-specific channel permission **allows** for unrelated users are cleared to prevent bypassing the new privacy setting. Pre-existing explicit denial exceptions are retained. Running `/setup_readonly` again later preserves team-private visibility and applies **only assigned section + FPS Command** posting access in those channels.
+
+The bot needs **Manage Channels** and **Manage Roles** and must already have permission to edit each channel. This command only modifies the five exact existing text channels, requires an explicit confirmation, and can be safely rerun without intentional duplicate or unrelated changes.
+
 ## Read-only FPS channels with role exceptions
 
 New, **opt-in admin-only** command: `/setup_readonly`.
@@ -12,7 +34,7 @@ Run `/setup_readonly confirm:false` to preview which channels would be changed a
 - Every standard text/announcement/forum channel **outside** the exempt categories. This includes uncategorized text channels. Existing channel visibility stays unchanged.
 - **Not touched at all:** the `Text Channel` / `Text Channels` category (including decorative punctuation/emoji), the `Adults Only` category, and all voice/stage channels. Thread write permissions on targeted text/forum parent channels are restricted, because Discord threads inherit their parent's permissions.
 - **General informational and operations channels:** only `FPS Command` and `FPS Team Leader` may write. `#operations` also permits `FPS Command Support`.
-- **Team-specific channels:** Command, Team Leaders, and the corresponding team role may write: `#anvil-team` → FPS Anvil, `#hammer-team` → FPS Hammer, `#raven-sta` → FPS Raven, `#titan-heavy` → FPS Titan, `#aviation` → FPS Aviation and FPS Command Support.
+- **Team-specific channels:** Only FPS Command plus the corresponding section role may write: `#anvil-team` → FPS Anvil, `#hammer-team` → FPS Hammer, `#raven-sta` → FPS Raven, `#titan-heavy` → FPS Titan, `#aviation` → FPS Aviation. Visibility is separately controlled by `/setup_team_chats`.
 - **`#leadership` and `#company-treasury`:** only `FPS Command` can type (plus Discord administrators by design). **Treasury remains publicly readable if `/setup_appearance` already made it public.** The role-based lock does not alter any View Channel permission or move channels to other categories.
 
 This explicitly denies posting, reactions, slash-command execution, and creating/sending into threads for ordinary members in the affected channels. Regular members can still run `/balance` in an exempt social text channel. Pre-existing member-specific positive posting exceptions and irrelevant-role posting exceptions are cleared so the FPS role rules hold; other read/visibility/management permissions and negative member-specific blocks are preserved. The bot retains permission to publish its information posts. **Discord server administrators always bypass ordinary channel restrictions** and cannot be made read-only through these channel overwrites.
