@@ -391,6 +391,18 @@ register_roles(
     guild_id=GUILD_ID,
 )
 
+# FPS team role colors and opt-in public treasury channel setup.
+from fps_appearance import register_appearance
+
+register_appearance(
+    bot=bot,
+    get_sheet=sheet,
+    is_command=is_command,
+    is_admin=is_admin,
+    reply=answer,
+    guild_id=GUILD_ID,
+)
+
 if __name__ == "__main__":
     if not TOKEN or TOKEN == "SET_PRIVATELY_IN_HOST":
         raise SystemExit("Set DISCORD_TOKEN as a private hosting environment variable first.")
