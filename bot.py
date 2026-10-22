@@ -4,6 +4,7 @@ import logging
 import base64
 import json
 import tempfile
+import asyncio
 from pathlib import Path
 
 import discord
@@ -232,7 +233,7 @@ async def contracts(interaction: discord.Interaction):
 # Manually sync the free Base Equipment tab to a single reusable channel post.
 # This does not write to the spreadsheet or run background polling.
 EQUIPMENT_POST_MARKER = "FPS_BASE_EQUIPMENT_V1 • /publish_equipment"
-equipment_publish_lock = __import__("asyncio").Lock()
+equipment_publish_lock = asyncio.Lock()
 
 
 def load_base_equipment():
@@ -269,7 +270,7 @@ async def publish_equipment(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True, thinking=True)
     try:
         # gspread is synchronous: keep the Discord event loop responsive.
-        starter, titan, policy_rows = await __import__("asyncio").to_thread(load_base_equipment)
+        starter, titan, policy_rows = await asyncio.to_thread(load_base_equipment)
     except Exception:
         log.exception("Unable to read the Base Equipment tab")
         return await answer(interaction, "Couldn't read the Base Equipment tab. No Discord post was changed.")
@@ -281,7 +282,7 @@ async def publish_equipment(interaction: discord.Interaction):
         color=0x137D73,
         timestamp=discord.utils.utcnow(),
     )
-    starter_lines = [f"• **{item[1]}** — {item[3]} CR  _( {item[0]} )_" for item in starter]
+    starter_lines = [f"• **{item[1]}** — {item[3]} CR _({item[0]})_" for item in starter]
     embed.add_field(name="STANDARD OPERATOR LOADOUT", value="\n".join(starter_lines), inline=False)
     embed.add_field(
         name="TITAN HEAVY — FIRST SECTION WEAPON",
