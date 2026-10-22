@@ -144,11 +144,12 @@ def register_team_chats(bot, is_admin, reply, guild_id=0):
             return await reply(interaction, preview)
 
         me = guild.me
-        if me is None or not me.guild_permissions.manage_channels:
-            return await reply(interaction, "Forgepoint Command needs Manage Channels permission.")
+        if me is None or not (me.guild_permissions.manage_channels and me.guild_permissions.manage_roles):
+            return await reply(interaction, "Forgepoint Command needs Manage Channels and Manage Roles permissions.")
 
         blocked = [ch.name for ch, _ in targets
-                   if not ch.permissions_for(me).manage_channels]
+                   if not (ch.permissions_for(me).manage_channels and
+                           ch.permissions_for(me).manage_roles)]
         if blocked:
             return await reply(
                 interaction,
