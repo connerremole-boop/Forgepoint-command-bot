@@ -179,7 +179,7 @@ async def treasury(interaction: discord.Interaction):
     if not is_command(interaction):
         return await answer(interaction, "FPS Command access required.")
     try:
-        value = sheet().worksheet("FPS Treasury").acell("C11").formatted_value
+        value = sheet().worksheet("FPS Treasury").acell("C11").value
         await answer(interaction, f"**FPS Treasury:** {value}", private=True)
     except Exception as exc:
         log.warning("Treasury sheet error: %s", exc)
@@ -206,8 +206,8 @@ async def shop(interaction: discord.Interaction, section: str = ""):
 async def reputation(interaction: discord.Interaction):
     try:
         ws = sheet().worksheet("Reputation Meter")
-        score = ws.acell("C6").formatted_value
-        tier = ws.acell("E6").formatted_value
+        score = ws.acell("C6").value
+        tier = ws.acell("E6").value
         await answer(interaction, f"**FPS Reputation (DRAFT)** — {score}/100, {tier}.\nPoint rules require Forge Command approval.", private=False)
     except Exception as exc:
         log.warning("Reputation sheet error: %s", exc)
