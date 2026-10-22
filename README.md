@@ -2,6 +2,14 @@
 
 **Status:** LIVE on Northflank (according to the successful Discord tests). The bot reads its data from the FPS Google Sheet and does not write to it. Currently deployed commands: `/setup_fps`, `/roster`, `/treasury`, `/shop`, `/reputation`, `/contracts`, and **`/publish_equipment`**. The current integration uses manual publication, not automatic background updates.
 
+## Public treasury balance for all FPS members
+
+**`/balance`** can be used by **any member of the FPS Discord server**, in any channel where they can use application commands. It posts a normal **public** Discord reply (not an ephemeral one) showing only the live **FPS Treasury!C11** company balance in fictional CR. No Google Sheets edits, individual transactions, purchases, or other private records are disclosed.
+
+The older **`/treasury`** command remains **FPS Command-only** and responds privately. The **`#company-treasury`** channel also remains command-only; this update does not change any channel permissions. If everyone needs to see the balance, run `/balance` in a channel that everyone can already view.
+
+This update is committed to the GitHub main branch; the connected Northflank service must deploy the latest commit before the slash command appears. If it does not, inspect the Northflank deployment status and logs.
+
 ## Essential channel publisher commands
 
 These commands are **manual** (no background monitoring). They pull fresh data from the already-connected Master Sheet each time, then publish **one bot-authored reference post per channel**. Re-running a command edits its previous managed message, within the most recent 250 channel messages, rather than posting duplicates. Commands are restricted to FPS Command or Discord server Administrators and are **read-only** toward Google Sheets.
