@@ -1,6 +1,22 @@
 # Forgepoint Command Bot — Starter Deployment
 
-**Status:** Source uploaded to your private GitHub repository. **Not yet hosted or online.** This is the **safe read-only starter**, not yet the full V1 feature set from the downloadable ZIP. Current features in `bot.py`: `/setup_fps` (preview/create), `/roster`, `/treasury`, `/shop`, `/reputation`, `/contracts`.
+**Status:** LIVE on Northflank (according to the successful Discord tests). The bot reads its data from the FPS Google Sheet and does not write to it. Currently deployed commands: `/setup_fps`, `/roster`, `/treasury`, `/shop`, `/reputation`, `/contracts`, and **`/publish_equipment`**. The current integration uses manual publication, not automatic background updates.
+
+## Publishing standard equipment in Discord
+
+**What it does:** `/publish_equipment` reads **Base Equipment!A6:E13, A18:E18, and A22:A24** from the live FPS Master Sheet, then creates or updates one bot-authored embed in **#standard-equipment**. It includes the free starter loadout, the *one initial M249 for Titan Heavy* rule, shop-policy notes, and a source link. It does **not** spend credits or modify Google Sheets.
+
+**Who can run it:** Discord Administrators or members with the `FPS Command` Discord role. Ordinary members can read the published channel post.
+
+**Phone steps:**
+1. In Discord, type `/publish_equipment` anywhere in the FPS server and choose the Forgepoint Command command.
+2. The bot privately confirms the publish; everyone with access to `#standard-equipment` sees the single public reference post.
+3. When the Base Equipment tab changes, run the *same* command again; it edits its existing message rather than adding duplicates (provided the message is still within the last 250 messages in that channel).
+4. **Pinning is optional.** If the bot has Manage Messages permission for that channel, it pins the post. Otherwise a human moderator can pin it manually. **Do not grant Administrator** just for pinning.
+
+**Deployment:** The private `main` branch is linked to **Northflank** and was configured to auto-deploy. New commits will normally redeploy it; check Northflank's deployment logs if the new slash command does not appear. The bot needs its existing `DISCORD_TOKEN`, `DISCORD_GUILD_ID`, and securely mounted Google service-account credentials. Never put keys or tokens in GitHub.
+
+## Original deployment notes (Railway alternative)
 
 ## Deploy on Railway (phone-friendly)
 1. Connect this private GitHub repository in Railway → New Project → Deploy from GitHub.
