@@ -66,6 +66,16 @@ Generic `FPS Member` and `FPS Team Leader` roles are intentionally unchanged to 
 
 **IMPORTANT:** After applying, previous messages in `#company-treasury` will also be visible to all server members. Review its history before using `confirm:true`. The bot needs **Manage Roles** and its highest role above each team role, **Manage Channels** for the treasury, plus **Send Messages** and **Embed Links**; `Manage Messages` is optional for automatic pinning. These commands never create roles or automatically synchronize the Sheets roster.
 
+## One-command role assignment for Kuba (Aviation Lead)
+
+Forgepoint Command now has `/assign_kuba`. **Select Kuba's exact Discord member account** from the slash command user picker; the bot does **not** attempt to guess his Discord identity from a nickname or the Google Sheet.
+
+1. Preview with `/assign_kuba member:@Kuba confirm:false` to check the Discord user and all requested roles without changing anything.
+2. Apply with `/assign_kuba member:@Kuba confirm:true`. This grants exactly the **missing** roles from **FPS Member**, **FPS Aviation**, and **FPS Team Leader**.
+3. The FPS Aviation role permits entry to the private `#aviation` channel; Team Leader recognizes Kuba's Aviation Lead position. The bot does **not** grant FPS Command, Command Support, or Discord administrative permissions, and does not remove any existing roles.
+
+The command is restricted to FPS Command and Discord server administrators. The bot needs `Manage Roles` and its highest role must be above both the user and roles it manages. If a Discord API operation fails midway, the command reports the roles it added and can safely be repeated; roles already held are skipped. **No Google Sheets data is modified.** The new command becomes available after Northflank redeploys the GitHub main branch.
+
 ## Assigning existing Discord roles
 
 **Role commands (no creation of new roles):**
