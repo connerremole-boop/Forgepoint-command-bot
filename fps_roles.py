@@ -115,3 +115,133 @@ def register_roles(bot, is_command, is_admin, reply, permitted_roles, guild_id=0
             return await reply(interaction, "Discord couldn't remove the role. Try again.")
         await reply(interaction, "✅ Removed **{}** from **{}**. This changed Discord only; the Google Sheets roster was not edited.".format(
             role.name, member.display_name))
+
+
+    @bot.tree.command(
+        name="assign_kuba",
+        description="Assign Kuba's FPS Aviation Lead roles in one action",
+    )
+    @app_commands.guild_only()
+    @app_commands.describe(
+        member="Select Kuba's exact Discord account",
+        confirm="False previews, True assigns all missing Aviation Lead roles",
+    )
+    async def assign_kuba(
+        interaction: discord.Interaction,
+        member: discord.Member,
+        confirm: bool = False,
+    ):
+        """Give an explicitly selected member just the Aviation Lead roles."""
+        guild = interaction.guild
+        if guild is None or (guild_id and guild.id != guild_id):
+            return await reply(interaction, "This command can only be used in the FPS Discord server.")
+        if not is_command(interaction):
+            return await reply(
+                interaction,
+                "Only FPS Command or a Discord server administrator can assign Aviation Lead roles.",
+            )
+        if member.guild.id != guild.id:
+            return await reply(interaction, "Choose Kuba from this Discord server's member list.")
+
+        required_names = ("FPS Member", "FPS Aviation", "FPS Team Leader")
+        required_roles = [discord.utils.get(guild.roles, name=name)
+                          for name in required_names]
+        missing_names = [name for name, role in zip(required_names, required_roles)
+                         if role is None]
+        if missing_names:
+            return await reply(
+                interaction,
+                "These FPS roles don't exist yet: {}. Nothing changed.".format(
+                    ", ".join(missing_names)
+                ),
+            )
+
+        bot_member = guild.me
+        if bot_member is None or not bot_member.guild_permissions.manage_roles:
+            return await reply(
+                interaction,
+                "The bot needs Manage Roles permission to assign Aviation Lead roles.",
+            )
+        if member.id == guild.owner_id or member.top_role >= bot_member.top_role:
+            return await reply(
+                interaction,
+                "The bot's highest role must be above Kuba's highest role, "
+                "and the server owner cannot be managed by the bot.",
+            )
+        for role in required_roles:
+            if role.is_default() or role.managed or role >= bot_member.top_role:
+                return await reply(
+                    interaction,
+                    "The bot's role must be above **{}** in Discord Server Settings → Roles. "
+                    "No changes made.".format(role.name),
+                )
+            if (not is_admin(interaction) and
+                    any(getattr(role.permissions, flag, False)
+                        for flag in PRIVILEGED_PERMISSIONS)):
+                return await reply(
+                    interaction,
+                    "**{}** has elevated Discord permissions, so only a server administrator "
+                    "may assign it. No changes made.".format(role.name),
+                )
+
+        to_add = [role for role in required_roles if role not in member.roles]
+        if not to_add:
+            return await reply(
+                interaction,
+                "✅ **{}** already has all three Aviation Lead roles: "
+                "**FPS Member**, **FPS Aviation**, and **FPS Team Leader**. "
+                "No changes needed.".format(member.display_name),
+            )
+
+        roles_list = ", ".join("**{}**".format(role.name) for role in required_roles)
+        pending_list = ", ".join("**{}**".format(role.name) for role in to_add)
+        if not confirm:
+            return await reply(
+                interaction,
+                "**KUBA / AVIATION LEAD ROLE PREVIEW**\n"
+                "Selected Discord member: {} (ID: `{}`)\n"
+                "Required roles: {}\n"
+                "Still to assign: {}\n"
+                "**No FPS Command role will be granted.** "
+                "Existing roles will not be removed. "
+                "Google Sheets will not be modified.\n"
+                "To apply, run `/assign_kuba` with the same member and `confirm:true`."
+                .format(member.mention, member.id, roles_list, pending_list),
+            )
+
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        applied = []
+        failure = None
+        for role in to_add:
+            try:
+                await member.add_roles(
+                    role,
+                    reason="FPS Aviation Lead assignment by {} (ID {})".format(
+                        interaction.user, interaction.user.id
+                    ),
+                )
+                applied.append(role.name)
+            except (discord.Forbidden, discord.HTTPException):
+                log.exception("Aviation Lead role assignment failed: %s", role.name)
+                failure = role.name
+                break
+
+        if failure:
+            return await reply(
+                interaction,
+                "⚠️ Partially assigned roles to {}. Added: {}. "
+                "Couldn't assign **{}**. Check the bot's role hierarchy "
+                "and run the command again after fixing permissions.".format(
+                    member.mention, ", ".join(applied) or "none", failure
+                ),
+            )
+
+        await reply(
+            interaction,
+            "✅ {} is now set up as **Aviation Lead**. Newly assigned: {}. "
+            "Required roles: {}. His private **#aviation** chat access comes "
+            "from FPS Aviation. No additional roles were removed, and the "
+            "Google Sheets roster was not modified.".format(
+                member.mention, ", ".join(applied), roles_list
+            ),
+        )
