@@ -68,29 +68,90 @@ def register_roles(bot, is_command, is_admin, reply, permitted_roles, guild_id=0
 
         return None
 
-    @bot.tree.command(name="assign_role", description="Assign an existing FPS role to a server member")
+    @bot.tree.command(
+        name="assign_role",
+        description="Assign up to five existing FPS roles to one server member",
+    )
     @app_commands.guild_only()
-    @app_commands.describe(member="FPS member to give the role to",
-                           role="Existing FPS role (pick one from Discord's list)")
-    async def assign_role(interaction: discord.Interaction,
-                          member: discord.Member, role: discord.Role):
-        problem = validate(interaction, member, role)
-        if problem:
-            return await reply(interaction, problem)
-        if role in member.roles:
-            return await reply(interaction, "{} already has {}.".format(
-                member.mention, role.mention))
+    @app_commands.describe(
+        member="FPS member receiving the roles",
+        role="First FPS role (required)",
+        role2="Second FPS role (optional)",
+        role3="Third FPS role (optional)",
+        role4="Fourth FPS role (optional)",
+        role5="Fifth FPS role (optional)",
+    )
+    async def assign_role(
+        interaction: discord.Interaction,
+        member: discord.Member,
+        role: discord.Role,
+        role2: discord.Role | None = None,
+        role3: discord.Role | None = None,
+        role4: discord.Role | None = None,
+        role5: discord.Role | None = None,
+    ):
+        # Deduplicate repeated selections without changing user-specified order.
+        selected = []
+        seen = set()
+        for candidate in (role, role2, role3, role4, role5):
+            if candidate is not None and candidate.id not in seen:
+                selected.append(candidate)
+                seen.add(candidate.id)
+
+        # Validate ALL roles before touching the member. A single blocked role
+        # aborts the operation, rather than partially granting the easy ones.
+        for candidate in selected:
+            problem = validate(interaction, member, candidate)
+            if problem:
+                return await reply(
+                    interaction,
+                    "No roles assigned. **{}**: {}".format(candidate.name, problem),
+                )
+
+        # Bots cannot edit a server owner's roles or a member at/above their
+        # highest role, even when individual new roles are lower.
+        guild = interaction.guild
+        bot_member = guild.me
+        if member.id == guild.owner_id or member.top_role >= bot_member.top_role:
+            return await reply(
+                interaction,
+                "No roles assigned. The bot cannot manage the server owner or a member "
+                "whose highest role is at or above the bot's highest role.",
+            )
+
+        to_add = [candidate for candidate in selected if candidate not in member.roles]
+        already_have = [candidate.name for candidate in selected if candidate in member.roles]
+        if not to_add:
+            return await reply(
+                interaction,
+                "✅ **{}** already has every selected FPS role: {}. "
+                "Nothing changed.".format(
+                    member.display_name, ", ".join("**{}**".format(r.name) for r in selected)
+                ),
+            )
+
         try:
             await member.add_roles(
-                role, reason="FPS role assigned by {} (ID {})".format(
-                    interaction.user, interaction.user.id))
-        except discord.Forbidden:
-            return await reply(interaction, "Discord refused the role change. Check Manage Roles and the bot's role position.")
-        except discord.HTTPException:
-            log.exception("Could not assign FPS role")
-            return await reply(interaction, "Discord couldn't assign the role. Try again.")
-        await reply(interaction, "✅ Assigned **{}** to **{}**. This changed Discord only; the Google Sheets roster was not edited.".format(
-            role.name, member.display_name))
+                *to_add,
+                reason="FPS bulk role assignment by {} (ID {})".format(
+                    interaction.user, interaction.user.id
+                ),
+            )
+        except (discord.Forbidden, discord.HTTPException):
+            log.exception("Could not assign one or more FPS roles")
+            return await reply(
+                interaction,
+                "⚠️ Discord rejected a role change. Some selections may have applied. "
+                "Check the member's roles and retry; roles already held will be skipped.",
+            )
+
+        details = "✅ Assigned **{}** to **{}**.".format(
+            ", ".join(r.name for r in to_add), member.display_name
+        )
+        if already_have:
+            details += " Already held: **{}**.".format(", ".join(already_have))
+        details += " Discord roles updated; Google Sheets roster unchanged."
+        await reply(interaction, details)
 
     @bot.tree.command(name="remove_role", description="Remove an existing FPS role from a server member")
     @app_commands.guild_only()
