@@ -80,8 +80,10 @@ The command is restricted to FPS Command and Discord server administrators. The 
 
 **Role commands (no creation of new roles):**
 
-- `/assign_role member:@Person role:@FPS Anvil` — give that member an existing FPS Discord role.
+- `/assign_role member:@Person role:@FPS Member role2:@FPS Anvil role3:@FPS Team Leader` — assign **up to five FPS roles at once**. The first `role` is required; `role2` through `role5` are optional. Existing roles are skipped, duplicates are deduplicated, and **all selected roles are checked for permissions before any assignment**.
 - `/remove_role member:@Person role:@FPS Hammer` — remove an existing FPS Discord role.
+
+Bulk assignment does **not** automatically remove old team roles; use `/remove_role` for transfers. The bot applies several additions in one command, but Discord processes individual role updates, so a network failure can leave a partial result; check the member's roles if an error is reported.
 
 Both commands are restricted to **FPS Command** or Discord server administrators. They accept only roles from the bot's existing FPS role allowlist: FPS Command, FPS Team Leader, FPS Member, FPS Anvil, FPS Hammer, FPS Raven, FPS Titan, FPS Aviation, and FPS Command Support. **Only a Discord administrator can grant or remove FPS Command itself**, and granting roles with sensitive Discord administrative permissions also requires an administrator. Normal member and section roles can be delegated by FPS Command staff.
 
