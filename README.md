@@ -2,6 +2,14 @@
 
 **Status:** LIVE on Northflank (according to the successful Discord tests). The bot reads its data from the FPS Google Sheet and does not write to it. Currently deployed commands: `/setup_fps`, `/roster`, `/treasury`, `/shop`, `/reputation`, `/contracts`, and **`/publish_equipment`**. The current integration uses manual publication, not automatic background updates.
 
+## FPS Medic — specialist role
+
+**`FPS Medic`** is now included in Forgepoint's standard role list and can be assigned by the existing `/assign_role` command alongside FPS Member, FPS Anvil/Hammer/etc., and FPS Team Leader. It is a **cross-team specialty**, not a new section. The role does **not** grant access to private team chats, change command authority, or confer extra Discord permissions; medics still need the appropriate team role. Its role color is left unset so the member's unique team color is shown in chat when the team role is positioned highest.
+
+After the updated GitHub code deploys on Northflank, a Discord server administrator can run **`/setup_fps confirm:false`** and check that `FPS Medic` is the only missing role, then run **`/setup_fps confirm:true`** to create it. The setup routine only creates missing roles/channels and does not replace existing ones. If the preview lists any other missing channels or categories, it is important to review them before confirming, because setup would create those too.
+
+To assign it, run `/assign_role member:@Member role:@FPS Medic` (or choose the Medic role as one of up to five selected roles). The role does not alter the Google Sheets roster.
+
 ## Private and writable FPS team chats
 
 New admin-only command: `/setup_team_chats`.
