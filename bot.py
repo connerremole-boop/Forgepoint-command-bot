@@ -20,7 +20,7 @@ GUILD_ID = int(os.getenv("DISCORD_GUILD_ID", "0"))
 SHEET_ID = os.getenv("GOOGLE_SHEET_ID", "1ZH5-ComS-Dv21bRGgM7GZ9SfS1bRcE6QfOXjTqshE6Y")
 
 ROLES = ["FPS Command", "FPS Team Leader", "FPS Member", "FPS Anvil", "FPS Hammer",
-         "FPS Raven", "FPS Titan", "FPS Aviation", "FPS Command Support"]
+         "FPS Raven", "FPS Titan", "FPS Aviation", "FPS Command Support", "FPS Medic"]
 STRUCTURE = {
     "FPS INFORMATION": [("rules", True), ("announcements", True), ("chain-of-command", True),
                         ("company-roster", True), ("recruitment", False)],
