@@ -33,11 +33,11 @@ STRUCTURE = {
 ROSTER = {
     "Command": ("Rex — Forge Actual; Kahuna — Forge Bravo", 2, 2),
     "Anvil": ("Wolf — Anvil Actual", 1, 8),
-    "Hammer": ("Freedlund — Hammer Actual; Stratt — A/ Team Leader", 2, 7),
+    "Hammer": ("Freedlund — Hammer Actual; Stratt — A/ Team Leader; Lanal — Medic / GP", 3, 7),
     "Raven STA": ("Fridgy — Raven Actual", 1, 4),
     "Titan": ("Thorn — Titan Actual", 1, 4),
     "Command Support": ("Dark — Forge Fires", 1, 1),
-    "Aviation": ("Kuba — Valkyrie Actual", 1, 4),
+    "Aviation": ("Kuba — Valkyrie Actual; Nolan — Crew Chief", 2, 4),
 }
 RULES = [
     ("Respect & conduct", "Treat teammates and other BMG members respectfully. Follow Discord and BMG rules. No harassment, discrimination, threats or deliberate disruption."),
