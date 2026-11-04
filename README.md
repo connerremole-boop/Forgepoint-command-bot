@@ -10,6 +10,22 @@ After the updated GitHub code deploys on Northflank, a Discord server administra
 
 To assign it, run `/assign_role member:@Member role:@FPS Medic` (or choose the Medic role as one of up to five selected roles). The role does not alter the Google Sheets roster.
 
+## Sync FPS Hammer Discord role members into the roster
+
+**New admin-only command:** `/sync_hammer` imports all non-bot Discord members who have the existing `FPS Hammer` role into vacant **Hammer Roster** slots in the FPS Master Sheet. All are subordinate to **Freedlund (Hammer Actual)**. It does **not** change Discord roles, create new slots, increase Hammer's seven-person cap, or alter existing assigned billets (including Freedlund HMR-01, Stratt HMR-02, or Lanal HMR-06).
+
+**One-time setup (required for Discord's complete member list):**
+
+1. In the [Discord Developer Portal](https://discord.com/developers/applications), select the Forgepoint Command application, go to **Bot → Privileged Gateway Intents**, and turn on **Server Members Intent**.
+2. In Northflank, set `FPS_MEMBER_SYNC_ENABLED=1` on the bot service and deploy/restart. **Do not set the environment variable until the Discord Developer Portal intent is enabled**, or Discord may reject the bot's gateway connection.
+3. Ensure the bot's configured Google service account has **Editor** access to the existing FPS Master Sheet. Previous public commands only needed to read it; this command needs write access.
+
+**Usage:** First run `/sync_hammer confirm:false` to fetch the complete Discord role membership, compare it to the existing seven Hammer roster slots, and preview every addition. This is read-only. Check that member names and proposed vacant slots are correct; if a Discord nickname differs from the person's known FPS roster nickname, a false duplicate is possible and must be resolved before applying. Then run `/sync_hammer confirm:true` to re-check current role membership and the Sheet, and add the matched candidates.
+
+**Safeguards:** The command rejects cross-team matches, duplicate display names, and over-capacity imports instead of writing an incomplete set. It never overwrites occupied rows and leaves all existing billets unchanged. New members are marked **Active**, not automatically **Available**, and assigned the next vacant seat with a note that the existing billet specialty (Rifleman, Grenadier, Automatic Rifleman, Designated Marksman) is **provisional until Freedlund confirms it**. Discord account IDs are saved in the row's Notes to help later reconciliation. It is safe to rerun: members already present are skipped, and role removals do not automatically dismiss members from the roster.
+
+After successful synchronization run `/publish_roster` to refresh the managed company-roster Discord post. If the bot reports a Sheets permission error, give its Google service account Editor permission and retry after checking the Sheet for any partial update. This command has not been executed in live Discord just by committing the code.
+
 ## Private and writable FPS team chats
 
 New admin-only command: `/setup_team_chats`.
