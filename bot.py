@@ -157,23 +157,48 @@ async def setup_fps(interaction: discord.Interaction, confirm: bool = False):
 @bot.tree.command(name="roster", description="Show FPS section roster")
 @app_commands.describe(section="Leave blank for all FPS sections")
 async def roster(interaction: discord.Interaction, section: str = ""):
-    entries = [(name, values) for name, values in ROSTER.items()
-               if not section or section.lower() in name.lower()]
-    if not entries:
+    names = [
+        name for name in ROSTER
+        if not section or section.casefold() in name.casefold()
+    ]
+    if not names:
         return await answer(interaction, "No matching FPS section.")
+
+    def load_live_roster():
+        workbook = sheet()
+        counts = workbook.worksheet("Personnel Dashboard").get("A11:D17")
+        people = workbook.worksheet("Master Roster").get("A7:E46")
+        figures = {}
+        member_names = {name: [] for name in ROSTER}
+        for row in counts:
+            if len(row) >= 3 and row[0] in member_names:
+                figures[row[0]] = (int(float(row[2])), int(float(row[1])))
+        for row in people:
+            if len(row) < 3 or row[0] not in member_names or not row[2]:
+                continue
+            display = row[2]
+            callsign = row[3] if len(row) > 3 else ""
+            billet = row[4] if len(row) > 4 else ""
+            if callsign:
+                display += " — " + callsign
+            elif "Medic" in billet or "Crew Chief" in billet or "A/" in billet:
+                display += " (" + billet + ")"
+            member_names[row[0]].append(display)
+        return figures, member_names
+
     try:
-        ws = sheet().worksheet("Personnel Dashboard")
-        latest = ws.get("A11:D17")
-        names = list(ROSTER)
-        for index, row in enumerate(latest[:7]):
-            if len(row) > 2 and index < len(names):
-                name = names[index]
-                details, count, cap = ROSTER[name]
-                ROSTER[name] = (details, int(float(row[2])), int(float(row[1])))
-        entries = [(name, ROSTER[name]) for name, _ in entries]
+        figures, member_names = await asyncio.to_thread(load_live_roster)
+        lines = []
+        for name in names:
+            assigned, capacity = figures.get(name, ROSTER[name][1:])
+            details = "; ".join(member_names[name]) or "No members assigned"
+            lines.append(f"**{name} — {assigned}/{capacity}**\n{details}")
     except Exception as exc:
         log.warning("Roster using snapshot: %s", exc)
-    lines = [f"**{name} — {assigned}/{capacity}**\n{description}" for name, (description, assigned, capacity) in entries]
+        lines = [
+            f"**{name} — {ROSTER[name][1]}/{ROSTER[name][2]}**\n{ROSTER[name][0]}"
+            for name in names
+        ]
     await answer(interaction, "\n\n".join(lines), private=False)
 
 
