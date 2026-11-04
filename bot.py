@@ -49,6 +49,8 @@ RULES = [
 ]
 
 intents = discord.Intents.default()
+# Full member listing is privileged; opt in only after enabling it in Discord Developer Portal.
+intents.members = os.getenv("FPS_MEMBER_SYNC_ENABLED", "0").strip().lower() in ("1", "true", "yes")
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 
@@ -420,6 +422,19 @@ register_team_chats(
     bot=bot,
     is_admin=is_admin,
     reply=answer,
+    guild_id=GUILD_ID,
+)
+
+
+# Admin-confirmed import of Discord FPS Hammer role members into the existing
+# Hammer Google Sheet roster. Requires privileged member intent opt-in.
+from fps_hammer_sync import register_hammer_sync
+
+register_hammer_sync(
+    bot=bot,
+    is_admin=is_admin,
+    reply=answer,
+    get_sheet=sheet,
     guild_id=GUILD_ID,
 )
 
