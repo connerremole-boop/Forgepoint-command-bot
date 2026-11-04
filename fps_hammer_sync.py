@@ -221,6 +221,12 @@ def register_hammer_sync(bot, is_admin, reply, get_sheet, guild_id=0):
                     sum(not slot["nickname"] for slot in slots),
                 ),
             ]
+            for member, slot in known:
+                lines.append(
+                    "✓ {} → **{}** (already on Hammer roster as {})".format(
+                        member.mention, slot["slot"], slot["nickname"]
+                    )
+                )
             for member, nickname, slot in planned:
                 lines.append(
                     "• {} → **{}** ({}, provisional duty)".format(
