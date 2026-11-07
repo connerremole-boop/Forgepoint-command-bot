@@ -32,7 +32,7 @@ STRUCTURE = {
 }
 ROSTER = {
     "Command": ("Rex — Forge Actual; Kahuna — Forge Bravo", 2, 2),
-    "Anvil": ("Wolf — Anvil Actual", 1, 8),
+    "Anvil": ("Bama — Anvil Actual", 1, 8),
     "Hammer": ("Freedlund — Hammer Actual; Stratt — A/ Team Leader; Lanal — Medic / GP", 3, 7),
     "Raven STA": ("Fridgy — Raven Actual", 1, 4),
     "Titan": ("Thorn — Titan Actual", 1, 4),
@@ -460,6 +460,18 @@ register_hammer_sync(
     is_admin=is_admin,
     reply=answer,
     get_sheet=sheet,
+    guild_id=GUILD_ID,
+)
+
+
+# Anvil leadership replacement, with admin preview/confirmation. Transfers
+# only standard FPS Member / Anvil / Team Leader roles in live Discord.
+from fps_lead_transfer import register_anvil_leader_transfer
+
+register_anvil_leader_transfer(
+    bot=bot,
+    is_admin=is_admin,
+    reply=answer,
     guild_id=GUILD_ID,
 )
 
