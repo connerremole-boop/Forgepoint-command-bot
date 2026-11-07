@@ -10,6 +10,16 @@ After the updated GitHub code deploys on Northflank, a Discord server administra
 
 To assign it, run `/assign_role member:@Member role:@FPS Medic` (or choose the Medic role as one of up to five selected roles). The role does not alter the Google Sheets roster.
 
+## Change Anvil Team Leader from Wolf to Bama (AlabamianFox)
+
+The existing **Anvil Roster ANV-01** (Anvil Actual) and its linked Master Roster, Chain of Command, and succession views now identify **Bama**, replacing **Wolf** after inactivity. The permanent callsign belongs to the position, not the player. Bama's correct Discord username is **AlabamianFox** (not AlabamaFox).
+
+**Admin-only Discord role handover:** `/replace_anvil_lead wolf:<select Wolf> bama:<select AlabamianFox> confirm:false` previews the exact selected accounts and FPS role changes. Re-run with `confirm:true` to grant the new Anvil lead any missing **FPS Member**, **FPS Anvil**, and **FPS Team Leader** roles, then revoke those three scoped FPS roles from the outgoing Wolf account. The command requires a selected Bama account whose actual Discord username is `AlabamianFox`; Wolf must currently hold FPS Anvil and FPS Team Leader. The bot needs **Manage Roles** and its top role must be above both members and the three roles. It refuses to copy a role that has acquired elevated Discord permissions.
+
+**Safety:** The command does not clone unrelated/privileged Discord roles, grant FPS Command, change the Sheet again, or silently assume which Discord account is Wolf. Preview explicitly lists any other Wolf roles left untouched. Verify no privileged access remains on Wolf if he had other roles. If Wolf has already left the server, use `/assign_role` for Bama and inspect/remediate any lingering Wolf role/member separately. After live role changes, run `/publish_roster` and `/publish_chain`.
+
+**Not automatically executed:** Committing this code does not mutate live Discord roles. Redeploy Northflank, then have a server admin execute the preview and confirmed command.
+
 ## Sync FPS Hammer Discord role members into the roster
 
 **New admin-only command:** `/sync_hammer` imports all non-bot Discord members who have the existing `FPS Hammer` role into vacant **Hammer Roster** slots in the FPS Master Sheet. All are subordinate to **Freedlund (Hammer Actual)**. It does **not** change Discord roles, create new slots, increase Hammer's seven-person cap, or alter existing assigned billets (including Freedlund HMR-01, Stratt HMR-02, or Lanal HMR-06).
