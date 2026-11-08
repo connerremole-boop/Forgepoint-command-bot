@@ -131,6 +131,20 @@ The older **`/treasury`** command remains **FPS Command-only** and responds priv
 
 This update is committed to the GitHub main branch; the connected Northflank service must deploy the latest commit before the slash command appears. If it does not, inspect the Northflank deployment status and logs.
 
+## Official FPS reputation (Forge Command approved)
+
+The 0–100 reputation system is now **OFFICIAL**. It starts at **50 / 100 (Unproven)**. The Master Sheet's **Reputation Meter** is authoritative; its formulas derive the current score from chronological, completed, Forge Command-approved event entries.
+
+Two live Discord views show the numeric score, current tier, hiring outlook, and a color-coded **10-block meter**:
+- `/reputation` is a public read-only lookup, available immediately after bot deployment.
+- `/publish_reputation` is for FPS Command/admins and publishes or updates the managed post in `#reputation`. Re-run after approved events are entered in Sheets. There is **no background refresh**.
+
+**Approved scoring:** primary objective +5, optional secondary +2, exactly one client bonus +1 to +3 per contract, legitimate failure −5, abandonment −8, and enemy buyout/betrayal −25. Avoidable-loss penalties are −2/−3/−5; contract violations are −5/−8/−10. Don't duplicate a penalty for the same betrayal. The score is clamped from 0 to 100.
+
+**Hiring tiers:** Blacklisted 0+, Unreliable 10+, Questionable 25+, Unproven 40+, Trusted 60+, Elite 75+, Legendary 90+. Better reputation affects contract access and employers' willingness to hire FPS, but **does not multiply CR payouts**. Contract payouts remain 100% on success, 50% rounded up on legitimate failure, and 0 on Void/Pending.
+
+**Recording changes:** enter a date, contract ID, event type, approver, and notes on the Reputation Meter's approved event log, then run `/publish_reputation`. This live bot does **not** implement the old proposed `/reputation_event` write command, and simply setting legacy `ENABLE_REPUTATION_WRITES` flags will not add it.
+
 ## Essential channel publisher commands
 
 These commands are **manual** (no background monitoring). They pull fresh data from the already-connected Master Sheet each time, then publish **one bot-authored reference post per channel**. Re-running a command edits its previous managed message, within the most recent 250 channel messages, rather than posting duplicates. Commands are restricted to FPS Command or Discord server Administrators and are **read-only** toward Google Sheets.
@@ -142,7 +156,7 @@ These commands are **manual** (no background monitoring). They pull fresh data f
 | `/publish_chain` | `#chain-of-command` | Live leadership from Chain of Command |
 | `/publish_shop` | `#equipment-shop` | All upgrade prices from Catalog |
 | `/publish_contracts` | `#contracts` | Most recent 8 contracts and payouts |
-| `/publish_reputation` | `#reputation` | 0–100 reputation + clearly marked **DRAFT** |
+| `/publish_reputation` | `#reputation` | Official 0–100 reputation, 10-block colored meter, and hiring outlook |
 | `/publish_boc` | `#recruitment` | Five-block, 30-minute Basic Operator Course |
 | `/publish_rules` | `#rules` | Summary of the existing static company rules |
 | `/post_notice channel:<announcements or operations> text:<your text> confirm:<false/true>` | `#announcements` or `#operations` | Creates a **new** notice only when `confirm:true`; otherwise shows a private preview |
@@ -179,7 +193,7 @@ These commands are **manual** (no background monitoring). They pull fresh data f
 5. In Discord, use `/setup_fps confirm:false` before approving `confirm:true`. Only admins can run it. It creates missing channels/roles and never deletes existing ones.
 6. The bot role needs **Manage Channels**, **Manage Roles**, **View Channels**, **Send Messages**, **Read Message History**, **Embed Links**; move bot role above FPS roles if role management fails.
 
-**Caution:** Google Sheet write commands, automatic announcements, and recurring synchronization from the original V1 prototype are **not yet deployed in this starter**. Sheet-linked read commands require a Google service account configured in Railway. Reputation remains **DRAFT**. No real-money exchange value is assigned to CR.
+**Caution:** Google Sheet write commands, automatic announcements, and recurring synchronization from the original V1 prototype are **not yet deployed in this starter**. Sheet-linked read commands require a Google service account configured in Railway. Reputation rules are **OFFICIAL**, but Sheet updates remain manual; no real-money exchange value is assigned to CR.
 
 ---
 ## Original V1 design notes (planned / bundled separately)
@@ -200,14 +214,14 @@ This is the **initial functional version**. The full source code, tests, Dockerf
 | Credits | `/treasury` privately shows real balance from `FPS Treasury!C11` |
 | Shops | `/shop section:Anvil & Hammer` displays items/prices from `Catalog` |
 | Contracts | `/contracts` shows finalized results; command staff can use `include_pending:true` privately |
-| Reputation | `/reputation` displays 0–100 score, tier and **draft** penalties |
+| Reputation | `/reputation` displays official score, tier, hiring outlook and visual meter |
 | Publish/update | `/publish channel:company-roster` edits the previous bot-authored post; similarly for other info channels |
 | Contract writes* | `/contract_add`, `/contract_result` fill only non-formula input cells |
 | Purchase writes* | `/purchase` validates Catalog ID, quantity and available CR; preserves formula cells |
 | Roster writes* | `/roster_assign`, `/roster_unassign` enforce authorized slot limits and preserve fixed leadership callsigns |
 | Reputation writes** | `/reputation_event` adds approved events while preserving sheet formulas; checks duplicate/buyout stacking |
 
-\* Disabled until `ENABLE_SHEETS_WRITES=true`. \** Additionally disabled until `ENABLE_REPUTATION_WRITES=true` because the reputation system is still a **proposal**.
+\* Disabled until `ENABLE_SHEETS_WRITES=true`. \** Additionally disabled until `ENABLE_REPUTATION_WRITES=true` because the legacy V1 write functionality was not deployed in the current bot (the reputation policy is now official).
 
 **Command hierarchy:** only Discord server Administrators can run `/setup_fps`; only Discord Administrators or people with the **FPS Command** role can write campaign data. Reading the central treasury is also restricted to FPS Command. The bot does not give anyone server-administrator permissions.
 
@@ -300,7 +314,7 @@ Then restart the bot. Command users can register contracts, approve purchases, o
 - Void/Pending = 0 CR.
 - FPS credits have **no USD conversion**.
 
-The reputation system begins at a **proposed** 50/100 with proposed mission bonuses/penalties, including **−25 for an enemy buyout that betrays an existing client**. Keep `ENABLE_REPUTATION_WRITES=false` until Rex/Kahuna approve the reputation point values. Then switch it to `true` and restart. The `/reputation_event` choices mirror your live Reputation Meter scoring table.
+The reputation system is now **OFFICIAL**, starting at **50/100**, with an approved **−25** enemy buyout/betrayal penalty. The original V1 `/reputation_event` write command is not part of this live bot; do not enable legacy flags expecting it to appear. Log approved events directly into the Reputation Meter Sheet and refresh the public post with `/publish_reputation`.
 
 **Important:** The bot validates bot-initiated actions but cannot prevent a human from editing the same spreadsheet row at the same instant, cannot guarantee cash accounting when external bots write concurrently, and cannot enforce every in-campaign pricing restriction. Keep an approval workflow for purchases/contracts. The existing workbook has **100 preformatted contract, purchase and reputation-log rows**. Extend its formulas before adding more.
 
