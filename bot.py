@@ -44,7 +44,7 @@ RULES = [
     ("Chain of command", "Forge Actual (Rex) and Forge Bravo (Kahuna) lead FPS. Section leaders coordinate their sections. A/ Team Leaders stand in as needed, without inheriting a permanent radio callsign."),
     ("Operations", "Follow mission briefings, maintain disciplined comms, cooperate with teammates and uphold fair-play standards. Real-life obligations come first; communicate absences when possible."),
     ("Contracts & credits", "FPS credits are fictional campaign currency, not USD. Success pays 100% of agreed fees; legitimate failure pays 50% rounded UP; pending or void contracts pay zero. Shop purchases require Command approval."),
-    ("Reputation", "FPS reputation scoring remains DRAFT until approved by Forge Command. Do not treat draft penalties as official."),
+    ("Reputation", "OFFICIAL: FPS reputation starts at 50/100 and ranges from 0 to 100. Only completed, Forge Command-approved events in the Reputation Meter change the score. Higher reputation improves hiring access; it does not change standard contract CR payouts. Avoid double-penalizing the same incident."),
     ("Motto", "Forged into Soldiers."),
 ]
 
@@ -266,16 +266,37 @@ async def shop(interaction: discord.Interaction, section: str = ""):
         await answer(interaction, "Google Sheets isn't available yet. Configure service account credentials first.")
 
 
-@bot.tree.command(name="reputation", description="Show proposed FPS reputation score and tier")
+@bot.tree.command(name="reputation", description="View official FPS reputation and its visual meter")
 async def reputation(interaction: discord.Interaction):
+    """Live, public, read-only company reputation status."""
+    from fps_reputation_ui import score_number, reputation_bar
+
     try:
-        ws = sheet().worksheet("Reputation Meter")
-        score = ws.acell("C6").value
-        tier = ws.acell("E6").value
-        await answer(interaction, f"**FPS Reputation (DRAFT)** — {score}/100, {tier}.\nPoint rules require Forge Command approval.", private=False)
-    except Exception as exc:
-        log.warning("Reputation sheet error: %s", exc)
-        await answer(interaction, "Reputation is DRAFT. Google Sheets is not available yet.")
+        rows = await asyncio.to_thread(
+            lambda: sheet().worksheet("Reputation Meter").get("A6:G6")
+        )
+        if not rows:
+            raise ValueError("Reputation Meter A6:G6 is empty")
+        row = rows[0]
+        score = score_number(row[2] if len(row) > 2 else "")
+        tier = row[4] if len(row) > 4 and row[4] else "Unassigned"
+        outlook = row[6] if len(row) > 6 else ""
+        message = (
+            "**📈 FPS REPUTATION — OFFICIAL**\n"
+            + reputation_bar(score) + "\n"
+            + "**{} / 100**  •  **{}**\n".format(score, tier)
+            + "**Hiring outlook:** {}\n".format(outlook or "Not yet specified.")
+            + "Approved mission events change reputation; the score affects "
+              "hiring priority, **not** automatic contract payouts."
+        )
+        await answer(interaction, message, private=False)
+    except Exception:
+        log.exception("Official FPS reputation lookup failed")
+        await answer(
+            interaction,
+            "Could not read the live FPS reputation score. "
+            "No score or campaign record was changed.",
+        )
 
 
 @bot.tree.command(name="contracts", description="Show most recent FPS contract outcomes")
