@@ -40,6 +40,7 @@ ROSTER = {
     "Aviation": ("Kuba — Valkyrie Actual; Nolan — Crew Chief", 2, 4),
 }
 RULES = [
+    ("Eligibility — 16+", "Forgepoint Security (FPS) members must be at least 16 years old to join or remain in the unit. Applicants under 16 are not eligible. Dishonestly claiming to meet the minimum age may result in removal. Do not post identity documents or full birthdates in public channels."),
     ("Respect & conduct", "Treat teammates and other BMG members respectfully. Follow Discord and BMG rules. No harassment, discrimination, threats or deliberate disruption."),
     ("Chain of command", "Forge Actual (Rex) and Forge Bravo (Kahuna) lead FPS. Section leaders coordinate their sections. A/ Team Leaders stand in as needed, without inheriting a permanent radio callsign."),
     ("Operations", "Follow mission briefings, maintain disciplined comms, cooperate with teammates and uphold fair-play standards. Real-life obligations come first; communicate absences when possible."),
