@@ -9,6 +9,7 @@ from collections import defaultdict
 
 import discord
 from discord import app_commands
+from fps_reputation_ui import score_number, reputation_bar, embed_color
 
 log = logging.getLogger("fps.publish")
 TEAL = 0x137D73
@@ -168,14 +169,23 @@ def build_reputation(workbook, sheet_id, marker):
     if not row:
         raise ValueError("Reputation Meter status row is empty")
     r = row[0]
-    score, tier, outlook = value(r, 2), value(r, 4), value(r, 6)
-    e = embed_base("📈 FPS | REPUTATION — DRAFT",
-                   "**PROPOSED SYSTEM ONLY.** Reputation rules are not official until "
-                   "Forge Command approves them. Reputation does not multiply credit payouts.",
+    score = score_number(value(r, 2))
+    tier, outlook = value(r, 4) or "Unassigned", value(r, 6)
+    e = embed_base("📈 FPS | REPUTATION — OFFICIAL",
+                   "**Forge Command-approved reputation system.** Completed, approved "
+                   "campaign events move the company score from 0 to 100. Higher reputation "
+                   "improves hiring opportunities; it does **not** multiply credit payouts.",
                    marker)
-    field(e, "CURRENT DRAFT SCORE", "{} / 100  •  {}".format(score or "?", tier or "Unassigned"))
+    e.color = embed_color(score)
+    field(e, "COMPANY REPUTATION",
+          reputation_bar(score) + "\n**{} / 100**  •  **{}**".format(score, tier))
     if outlook:
-        field(e, "HIRING OUTLOOK (DRAFT)", outlook)
+        field(e, "HIRING OUTLOOK", outlook)
+    field(e, "SCORING QUICK REFERENCE",
+          "Primary objective **+5** • Secondary **+2** • One client bonus **+1 to +3**\n"
+          "Contract failure **−5** • Abandonment **−8** • Enemy buyout/betrayal **−25**\n"
+          "Other violations and avoidable losses use the approved event schedule. "
+          "Each event must be logged and approved by Forge Command.")
     field(e, "LIVE SOURCE", "[Reputation Meter]({})".format(link(sheet_id, "reputation")))
     return e
 
@@ -217,7 +227,7 @@ def register_publishing(bot, get_sheet, is_command, reply, rules, sheet_id):
         ("publish_chain", "chain-of-command", build_chain, "Refresh the FPS chain of command"),
         ("publish_shop", "equipment-shop", build_shop, "Publish live shop prices and upgrades"),
         ("publish_contracts", "contracts", build_contracts, "Publish the latest recorded contracts"),
-        ("publish_reputation", "reputation", build_reputation, "Publish the draft FPS reputation"),
+        ("publish_reputation", "reputation", build_reputation, "Publish the official FPS reputation meter"),
         ("publish_boc", "recruitment", build_boc, "Publish the 30-minute recruit orientation"),
         ("publish_rules", "rules", None, "Publish the FPS rules reference"),
     )
