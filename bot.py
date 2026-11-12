@@ -255,13 +255,13 @@ async def balance(interaction: discord.Interaction):
 @app_commands.describe(section="Optional partial section name")
 async def shop(interaction: discord.Interaction, section: str = ""):
     try:
-        rows = sheet().worksheet("Catalog").get("A7:G54")
+        rows = sheet().worksheet("Catalog").get("A7:G55")
         items = [r for r in rows if len(r) >= 5 and r[0].startswith("FPS-")
                  and (not section or section.lower() in r[1].lower())]
         if not items:
             return await answer(interaction, "No matching shop items.")
         lines = [f"`{r[0]}` {r[3]} — **{r[4]} CR** ({r[1]})" for r in items[:22]]
-        await answer(interaction, "**FPS SHOP**\n" + "\n".join(lines), private=False)
+        await answer(interaction, "**FPS SHOP — OLD GUYS CANDIDATES**\nWeapon availability pending Fridgy/server confirmation. Command approval required before purchases.\n" + "\n".join(lines), private=False)
     except Exception as exc:
         log.warning("Shop sheet error: %s", exc)
         await answer(interaction, "Google Sheets isn't available yet. Configure service account credentials first.")
