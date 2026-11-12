@@ -2,6 +2,16 @@
 
 **Status:** LIVE on Northflank (according to the successful Discord tests). The bot reads its data from the FPS Google Sheet and does not write to it. Currently deployed commands: `/setup_fps`, `/roster`, `/treasury`, `/shop`, `/reputation`, `/contracts`, and **`/publish_equipment`**. The current integration uses manual publication, not automatic background updates.
 
+## Old Guys-aligned shop (weapon shortlist; Fridgy confirmation pending)
+
+The FPS Master Sheet **Catalog** is now the authoritative Old Guys-aligned V2 shortlist, while the original FPS credit system remains intact. The gun options follow Old Guys/RHS/WCS/Nasty/B59-style workshop content, but **the exact FPS server arsenal has not been confirmed**; do not treat a listed weapon as installed until Fridgy verifies the server mod configuration. No Old Guys mod files were modified.
+
+**Infantry (Anvil & Hammer):** FPS-001 M4A1 CQBR (4 CR); FPS-002 HK416A5 (6); FPS-003 Mk 17 / SCAR-H (7); FPS-004 M203 (6); FPS-005 Nasty M1014 (5); FPS-006 Nasty SR-25 (10); new FPS-049 **AK — all approved variants (5 CR)**. All AK variants use **one SKU, one price, one unlock**, never per-variant IDs.
+
+**Raven STA:** FPS-013 M38 SDMR (8 CR); FPS-014 Nasty SR-25 (10); FPS-015 Nasty420 M700 (12); FPS-016 Nasty OSV-96 (15). **Titan:** first M249 remains free, additional M249 (5 CR), M240B (8), B59 Mk 48 (10), M72 LAW (8), Mk 153 SMAW (15). Other packages, vehicles, nonweapon upgrades, and section restrictions remain as before.
+
+**Integration:** The live `/shop` command and `/publish_shop` use `Catalog!A7:G55`, including FPS-049. `Purchases!C7:E106` lookup formulas now include the new Catalog row so the AK SKU resolves and deducts CR correctly when approved purchases are logged. Publish the new shop with `/publish_shop` after Northflank deploys this commit. This bot only reads Sheets; it does not write purchases automatically.
+
 ## FPS Medic — specialist role
 
 **`FPS Medic`** is now included in Forgepoint's standard role list and can be assigned by the existing `/assign_role` command alongside FPS Member, FPS Anvil/Hammer/etc., and FPS Team Leader. It is a **cross-team specialty**, not a new section. The role does **not** grant access to private team chats, change command authority, or confer extra Discord permissions; medics still need the appropriate team role. Its role color is left unset so the member's unique team color is shown in chat when the team role is positioned highest.
