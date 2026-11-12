@@ -112,7 +112,7 @@ def build_chain(workbook, sheet_id, marker):
 
 
 def build_shop(workbook, sheet_id, marker):
-    rows = workbook.worksheet("Catalog").get("A7:G54")
+    rows = workbook.worksheet("Catalog").get("A7:G55")
     groups = defaultdict(list)
     for r in rows:
         if value(r, 0).startswith("FPS-") and value(r, 3):
@@ -123,6 +123,9 @@ def build_shop(workbook, sheet_id, marker):
         raise ValueError("Catalog is empty. No shop post was changed.")
     e = embed_base("🛒 FPS | EQUIPMENT SHOP",
                    "Company **CR** only (no real-money conversion). "
+                   "Old Guys-aligned weapon candidates require Fridgy's confirmation "
+                   "against the actual server arsenal before purchase. "
+                   "**AK** is one shared unlock for all approved AK variants. "
                    "Paid upgrades require Forge Command approval. "
                    "Standard issue remains FREE in #standard-equipment.",
                    marker)
